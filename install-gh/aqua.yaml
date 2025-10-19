@@ -1,0 +1,9 @@
+---
+# aqua - Declarative CLI Version Manager
+# https://aquaproj.github.io/
+registries:
+  - type: standard
+    ref: v4.246.0 # or latest version
+
+packages:
+  - name: cli/cli@v2.65.0

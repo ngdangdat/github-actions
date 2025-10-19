@@ -9,44 +9,24 @@ branding:
 runs:
   using: 'composite'
   steps:
-    - name: Install gh on Linux
-      if: runner.os == 'Linux'
+    - name: Setup aqua cache
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.local/share/aquaproj-aqua
+          ~/.cache/aquaproj-aqua
+        key: ${{ runner.os }}-aqua-${{ hashFiles('**/aqua.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-aqua-
+
+    - name: Install aqua
+      uses: aquaproj/aqua-installer@6ce1f8848ec8e61f14d57bd5d7597057a6dd187c # v3.0.1
+      with:
+        aqua_version: v2.36.1
+
+    - name: Install gh with aqua
       shell: bash
       run: |
-        if ! command -v gh &> /dev/null; then
-          echo "Installing GitHub CLI..."
-          sudo mkdir -p -m 755 /etc/apt/keyrings
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
-          sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          sudo apt update
-          sudo apt install gh -y
-        else
-          echo "GitHub CLI is already installed"
-        fi
-        gh --version
-
-    - name: Install gh on macOS
-      if: runner.os == 'macOS'
-      shell: bash
-      run: |
-        if ! command -v gh &> /dev/null; then
-          echo "Installing GitHub CLI..."
-          brew install gh
-        else
-          echo "GitHub CLI is already installed"
-        fi
-        gh --version
-
-    - name: Install gh on Windows
-      if: runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        if (!(Get-Command gh -ErrorAction SilentlyContinue)) {
-          Write-Host "Installing GitHub CLI..."
-          choco install gh -y
-          refreshenv
-        } else {
-          Write-Host "GitHub CLI is already installed"
-        }
+        aqua install -a
+        echo "$(aqua root-dir)/bin" >> $GITHUB_PATH
         gh --version
