@@ -15,7 +15,7 @@ runs:
         path: |
           ~/.local/share/aquaproj-aqua
           ~/.cache/aquaproj-aqua
-        key: ${{ runner.os }}-aqua-${{ hashFiles(format('{0}/aqua.yaml', github.action_path)) }}
+        key: ${{ runner.os }}-aqua-gh-cli
         restore-keys: |
           ${{ runner.os }}-aqua-
 
@@ -27,8 +27,8 @@ runs:
     - name: Install gh with aqua
       shell: bash
       run: |
-        cd "${{ github.action_path }}"
-        aqua install -a
+        aqua init
+        aqua g -i cli/cli
         export PATH="$(aqua root-dir)/bin:$PATH"
         echo "$(aqua root-dir)/bin" >> $GITHUB_PATH
         gh --version
