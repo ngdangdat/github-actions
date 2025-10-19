@@ -1,6 +1,6 @@
 name: 'Install GitHub CLI'
 description: 'Install gh (GitHub CLI) on Linux, macOS, and Windows runners'
-author: 'Your Name'
+author: 'ngdangdat'
 
 branding:
   icon: 'terminal'
@@ -15,7 +15,7 @@ runs:
         path: |
           ~/.local/share/aquaproj-aqua
           ~/.cache/aquaproj-aqua
-        key: ${{ runner.os }}-aqua-${{ hashFiles('**/aqua.yaml') }}
+        key: ${{ runner.os }}-aqua-${{ hashFiles(format('{0}/aqua.yaml', github.action_path)) }}
         restore-keys: |
           ${{ runner.os }}-aqua-
 
@@ -26,6 +26,8 @@ runs:
 
     - name: Install gh with aqua
       shell: bash
+      env:
+        AQUA_CONFIG: ${{ github.action_path }}/aqua.yaml
       run: |
         aqua install -a
         export PATH="$(aqua root-dir)/bin:$PATH"

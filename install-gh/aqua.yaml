@@ -6,4 +6,4 @@ registries:
     ref: v4.246.0 # or latest version
 
 packages:
-  - name: cli/cli@v2.65.0
+  - name: cli/cli@v2.65.0  # GitHub CLI (gh command)
