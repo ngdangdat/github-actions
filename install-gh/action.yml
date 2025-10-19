@@ -28,5 +28,6 @@ runs:
       shell: bash
       run: |
         aqua install -a
+        export PATH="$(aqua root-dir)/bin:$PATH"
         echo "$(aqua root-dir)/bin" >> $GITHUB_PATH
         gh --version
