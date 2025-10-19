@@ -27,7 +27,8 @@ runs:
     - name: Install gh with aqua
       shell: bash
       run: |
-        aqua install -a -c "${{ github.action_path }}/aqua.yaml"
+        cd "${{ github.action_path }}"
+        aqua install -a
         export PATH="$(aqua root-dir)/bin:$PATH"
         echo "$(aqua root-dir)/bin" >> $GITHUB_PATH
         gh --version
