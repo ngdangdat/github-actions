@@ -1,0 +1,52 @@
+name: 'Install GitHub CLI'
+description: 'Install gh (GitHub CLI) on Linux, macOS, and Windows runners'
+author: 'Your Name'
+
+branding:
+  icon: 'terminal'
+  color: 'blue'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install gh on Linux
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        if ! command -v gh &> /dev/null; then
+          echo "Installing GitHub CLI..."
+          sudo mkdir -p -m 755 /etc/apt/keyrings
+          wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
+          sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh -y
+        else
+          echo "GitHub CLI is already installed"
+        fi
+        gh --version
+
+    - name: Install gh on macOS
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        if ! command -v gh &> /dev/null; then
+          echo "Installing GitHub CLI..."
+          brew install gh
+        else
+          echo "GitHub CLI is already installed"
+        fi
+        gh --version
+
+    - name: Install gh on Windows
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        if (!(Get-Command gh -ErrorAction SilentlyContinue)) {
+          Write-Host "Installing GitHub CLI..."
+          choco install gh -y
+          refreshenv
+        } else {
+          Write-Host "GitHub CLI is already installed"
+        }
+        gh --version
