@@ -110,6 +110,7 @@ jobs:
         working-directory: ${{ inputs.working_directory }}
         env:
           GITHUB_TOKEN: ${{ steps.github-app-token.outputs.token }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
         run: terraform init
 
       - name: Terraform Plan
@@ -119,6 +120,7 @@ jobs:
         env:
           TFCMT_GITHUB_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ steps.github-app-token.outputs.token }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
         run: tfcmt plan -- terraform plan ${{ inputs.plan_args }}
 
       - name: Terraform Apply
@@ -128,4 +130,5 @@ jobs:
         env:
           TFCMT_GITHUB_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ steps.github-app-token.outputs.token }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
         run: tfcmt apply -- terraform apply ${{ inputs.apply_args }}
