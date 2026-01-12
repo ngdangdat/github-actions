@@ -18,6 +18,7 @@ A GitHub Action to run Terraform plan/apply with GitHub App authentication, GCS 
     gh_app_id: ${{ secrets.GH_APP_ID }}
     gh_app_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
     github_app_installation_id: ${{ secrets.GH_APP_INSTALLATION_ID }}
+    tfcmt_github_token: ${{ secrets.github_token }}
     gcp_workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
     gcp_service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
     mode: plan
@@ -28,6 +29,7 @@ A GitHub Action to run Terraform plan/apply with GitHub App authentication, GCS 
     gh_app_id: ${{ secrets.GH_APP_ID }}
     gh_app_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
     github_app_installation_id: ${{ secrets.GH_APP_INSTALLATION_ID }}
+    tfcmt_github_token: ${{ secrets.github_token }}
     gcp_workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
     gcp_service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
     mode: apply
@@ -37,9 +39,10 @@ A GitHub Action to run Terraform plan/apply with GitHub App authentication, GCS 
 
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
-| `gh_app_id` | GitHub App ID for authentication | Yes | - |
-| `gh_app_private_key` | GitHub App Private Key (PEM format) | Yes | - |
-| `github_app_installation_id` | GitHub App Installation ID | Yes | - |
+| `gh_app_id` | GitHub App ID for Terraform GitHub provider | Yes | - |
+| `gh_app_private_key` | GitHub App Private Key (PEM format) for Terraform GitHub provider | Yes | - |
+| `github_app_installation_id` | GitHub App Installation ID for Terraform GitHub provider | Yes | - |
+| `tfcmt_github_token` | GitHub token for tfcmt PR comments (e.g., `secrets.GITHUB_TOKEN`) | Yes | - |
 | `gcp_workload_identity_provider` | GCP Workload Identity Provider | Yes | - |
 | `gcp_service_account` | GCP Service Account email | Yes | - |
 | `working_directory` | Directory containing Terraform configuration | No | `.` |
@@ -82,6 +85,7 @@ jobs:
           gh_app_id: ${{ secrets.GH_APP_ID }}
           gh_app_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
           github_app_installation_id: ${{ secrets.GH_APP_INSTALLATION_ID }}
+          tfcmt_github_token: ${{ secrets.github_token }}
           gcp_workload_identity_provider: projects/123456/locations/global/workloadIdentityPools/my-pool/providers/github
           gcp_service_account: terraform@my-project.iam.gserviceaccount.com
           working_directory: terraform
@@ -99,6 +103,7 @@ jobs:
           gh_app_id: ${{ secrets.GH_APP_ID }}
           gh_app_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
           github_app_installation_id: ${{ secrets.GH_APP_INSTALLATION_ID }}
+          tfcmt_github_token: ${{ secrets.github_token }}
           gcp_workload_identity_provider: projects/123456/locations/global/workloadIdentityPools/my-pool/providers/github
           gcp_service_account: terraform@my-project.iam.gserviceaccount.com
           working_directory: terraform

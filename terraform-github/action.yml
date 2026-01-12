@@ -8,13 +8,16 @@ branding:
 
 inputs:
   gh_app_id:
-    description: GitHub App ID for authentication
+    description: GitHub App ID for Terraform GitHub provider authentication
     required: true
   gh_app_private_key:
-    description: GitHub App Private Key (PEM format)
+    description: GitHub App Private Key (PEM format) for Terraform GitHub provider
     required: true
   github_app_installation_id:
-    description: GitHub App Installation ID
+    description: GitHub App Installation ID for Terraform GitHub provider
+    required: true
+  tfcmt_github_token:
+    description: GitHub token for tfcmt PR comments (e.g., secrets.GITHUB_TOKEN)
     required: true
   gcp_workload_identity_provider:
     description: GCP Workload Identity Provider (e.g., projects/123/locations/global/workloadIdentityPools/pool/providers/provider)
@@ -52,14 +55,6 @@ runs:
         workload_identity_provider: ${{ inputs.gcp_workload_identity_provider }}
         service_account: ${{ inputs.gcp_service_account }}
 
-    - name: Generate GitHub App Token
-      id: app-token
-      uses: actions/create-github-app-token@v2.2.1
-      with:
-        app-id: ${{ inputs.gh_app_id }}
-        private-key: ${{ inputs.gh_app_private_key }}
-        owner: ${{ github.repository_owner }}
-
     - name: Setup aqua cache
       uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
       with:
@@ -78,7 +73,7 @@ runs:
     - name: Install tfcmt
       shell: bash
       env:
-        GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        GH_TOKEN: ${{ inputs.tfcmt_github_token }}
         AQUA_GHATTESTATION_DISABLED: "true"
       run: |
         if [ ! -f aqua.yaml ]; then
@@ -99,7 +94,6 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working_directory }}
       env:
-        GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         GITHUB_APP_ID: ${{ inputs.gh_app_id }}
         GITHUB_APP_INSTALLATION_ID: ${{ inputs.github_app_installation_id }}
         GITHUB_APP_PEM_FILE: ${{ inputs.gh_app_private_key }}
@@ -110,7 +104,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working_directory }}
       env:
-        GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        TFCMT_GITHUB_TOKEN: ${{ inputs.tfcmt_github_token }}
         GITHUB_APP_ID: ${{ inputs.gh_app_id }}
         GITHUB_APP_INSTALLATION_ID: ${{ inputs.github_app_installation_id }}
         GITHUB_APP_PEM_FILE: ${{ inputs.gh_app_private_key }}
@@ -121,7 +115,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working_directory }}
       env:
-        GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        TFCMT_GITHUB_TOKEN: ${{ inputs.tfcmt_github_token }}
         GITHUB_APP_ID: ${{ inputs.gh_app_id }}
         GITHUB_APP_INSTALLATION_ID: ${{ inputs.github_app_installation_id }}
         GITHUB_APP_PEM_FILE: ${{ inputs.gh_app_private_key }}
