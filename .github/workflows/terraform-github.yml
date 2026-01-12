@@ -121,7 +121,7 @@ jobs:
           TFCMT_GITHUB_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ steps.github-app-token.outputs.token }}
           GITHUB_OWNER: ${{ github.repository_owner }}
-        run: tfcmt plan -- terraform plan ${{ inputs.plan_args }}
+        run: tfcmt plan -patch -- terraform plan ${{ inputs.plan_args }}
 
       - name: Terraform Apply
         if: inputs.mode == 'apply'

@@ -99,7 +99,7 @@ jobs:
         working-directory: ${{ inputs.working_directory }}
         env:
           TFCMT_GITHUB_TOKEN: ${{ github.token }}
-        run: tfcmt plan -- terraform plan ${{ inputs.plan_args }}
+        run: tfcmt plan -patch -- terraform plan ${{ inputs.plan_args }}
 
       - name: Terraform Apply
         if: inputs.mode == 'apply'
