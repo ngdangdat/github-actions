@@ -38,11 +38,14 @@ on:
         default: "-auto-approve"
     secrets:
       gh_app_id:
-        description: GitHub App ID for Terraform GitHub provider authentication
-        required: true
+        description: GitHub App ID for Terraform GitHub provider authentication (use with gh_app_private_key)
+        required: false
       gh_app_private_key:
-        description: GitHub App Private Key (PEM format) for Terraform GitHub provider
-        required: true
+        description: GitHub App Private Key (PEM format) for Terraform GitHub provider (use with gh_app_id)
+        required: false
+      gh_token:
+        description: Personal Access Token for Terraform GitHub provider (alternative to GitHub App, required for personal accounts)
+        required: false
 
 permissions:
   contents: read
@@ -53,6 +56,17 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     steps:
+      - name: Validate authentication
+        shell: bash
+        env:
+          GH_APP_ID: ${{ secrets.gh_app_id }}
+          GH_TOKEN: ${{ secrets.gh_token }}
+        run: |
+          if [ -z "$GH_APP_ID" ] && [ -z "$GH_TOKEN" ]; then
+            echo "::error::Either gh_app_id/gh_app_private_key or gh_token must be provided"
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -98,6 +112,7 @@ jobs:
           terraform_version: ${{ inputs.terraform_version }}
 
       - name: Generate GitHub App Token
+        if: ${{ secrets.gh_app_id != '' }}
         id: github-app-token
         uses: actions/create-github-app-token@v2.1.4
         with:
@@ -109,7 +124,8 @@ jobs:
         shell: bash
         working-directory: ${{ inputs.working_directory }}
         env:
-          GITHUB_TOKEN: ${{ steps.github-app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ secrets.gh_app_id != '' && steps.github-app-token.outputs.token || secrets.gh_token }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
         run: terraform init
 
       - name: Terraform Plan
@@ -118,7 +134,8 @@ jobs:
         working-directory: ${{ inputs.working_directory }}
         env:
           TFCMT_GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_TOKEN: ${{ steps.github-app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ secrets.gh_app_id != '' && steps.github-app-token.outputs.token || secrets.gh_token }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
         run: tfcmt plan -patch -- terraform plan ${{ inputs.plan_args }}
 
       - name: Terraform Apply
@@ -127,5 +144,6 @@ jobs:
         working-directory: ${{ inputs.working_directory }}
         env:
           TFCMT_GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_TOKEN: ${{ steps.github-app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ secrets.gh_app_id != '' && steps.github-app-token.outputs.token || secrets.gh_token }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
         run: tfcmt apply -- terraform apply ${{ inputs.apply_args }}
