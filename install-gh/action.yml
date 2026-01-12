@@ -20,9 +20,9 @@ runs:
           ${{ runner.os }}-aqua-
 
     - name: Install aqua
-      uses: aquaproj/aqua-installer@6ce1f8848ec8e61f14d57bd5d7597057a6dd187c # v3.0.1
+      uses: aquaproj/aqua-installer@f6be09d5313d3af86e3ad665911c67b149a4498c # v4.0.4
       with:
-        aqua_version: v4.0.4
+        aqua_version: v2.56.2
 
     - name: Install gh with aqua
       shell: bash
