@@ -43,7 +43,7 @@ on:
       gh_app_private_key:
         description: GitHub App Private Key (PEM format) for Terraform GitHub provider (use with gh_app_id)
         required: false
-      gh_token:
+      gh_pat:
         description: Personal Access Token for Terraform GitHub provider (alternative to GitHub App, required for personal accounts)
         required: false
 
@@ -60,10 +60,10 @@ jobs:
         shell: bash
         env:
           GH_APP_ID: ${{ secrets.gh_app_id }}
-          GH_TOKEN: ${{ secrets.gh_token }}
+          GH_PAT: ${{ secrets.gh_pat }}
         run: |
-          if [ -z "$GH_APP_ID" ] && [ -z "$GH_TOKEN" ]; then
-            echo "::error::Either gh_app_id/gh_app_private_key or gh_token must be provided"
+          if [ -z "$GH_APP_ID" ] && [ -z "$GH_PAT" ]; then
+            echo "::error::Either gh_app_id/gh_app_private_key or gh_pat must be provided"
             exit 1
           fi
 
@@ -124,7 +124,7 @@ jobs:
         shell: bash
         working-directory: ${{ inputs.working_directory }}
         env:
-          GITHUB_TOKEN: ${{ secrets.gh_app_id != '' && steps.github-app-token.outputs.token || secrets.gh_token }}
+          GITHUB_TOKEN: ${{ secrets.gh_app_id != '' && steps.github-app-token.outputs.token || secrets.gh_pat }}
           GITHUB_OWNER: ${{ github.repository_owner }}
         run: terraform init
 
@@ -134,7 +134,7 @@ jobs:
         working-directory: ${{ inputs.working_directory }}
         env:
           TFCMT_GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_TOKEN: ${{ secrets.gh_app_id != '' && steps.github-app-token.outputs.token || secrets.gh_token }}
+          GITHUB_TOKEN: ${{ secrets.gh_app_id != '' && steps.github-app-token.outputs.token || secrets.gh_pat }}
           GITHUB_OWNER: ${{ github.repository_owner }}
         run: tfcmt plan -patch -- terraform plan ${{ inputs.plan_args }}
 
@@ -144,6 +144,6 @@ jobs:
         working-directory: ${{ inputs.working_directory }}
         env:
           TFCMT_GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_TOKEN: ${{ secrets.gh_app_id != '' && steps.github-app-token.outputs.token || secrets.gh_token }}
+          GITHUB_TOKEN: ${{ secrets.gh_app_id != '' && steps.github-app-token.outputs.token || secrets.gh_pat }}
           GITHUB_OWNER: ${{ github.repository_owner }}
         run: tfcmt apply -- terraform apply ${{ inputs.apply_args }}
