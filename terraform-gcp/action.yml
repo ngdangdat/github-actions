@@ -65,6 +65,7 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github_token }}
+        AQUA_GHATTESTATION_DISABLED: "true"
       run: |
         aqua init
         aqua g -i suzuki-shunsuke/tfcmt

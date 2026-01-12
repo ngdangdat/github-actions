@@ -78,6 +78,7 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        AQUA_GHATTESTATION_DISABLED: "true"
       run: |
         aqua init
         aqua g -i suzuki-shunsuke/tfcmt
