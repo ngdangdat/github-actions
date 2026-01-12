@@ -52,7 +52,7 @@ runs:
         path: |
           ~/.local/share/aquaproj-aqua
           ~/.cache/aquaproj-aqua
-        key: ${{ runner.os }}-aqua-tfcmt
+        key: ${{ runner.os }}-aqua-${{ hashFiles('aqua.yaml') }}
         restore-keys: |
           ${{ runner.os }}-aqua-
 
@@ -64,11 +64,12 @@ runs:
     - name: Install tfcmt
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.github_token }}
-        AQUA_GHATTESTATION_DISABLED: "true"
+        GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
-        aqua init
-        aqua g -i suzuki-shunsuke/tfcmt
+        if [ ! -f aqua.yaml ]; then
+          aqua init
+          aqua g -i suzuki-shunsuke/tfcmt
+        fi
         aqua i
         export PATH="$(aqua root-dir)/bin:$PATH"
         echo "$(aqua root-dir)/bin" >> $GITHUB_PATH
