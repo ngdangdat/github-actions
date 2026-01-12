@@ -79,6 +79,7 @@ runs:
       run: |
         aqua init
         aqua g -i suzuki-shunsuke/tfcmt
+        aqua i
         export PATH="$(aqua root-dir)/bin:$PATH"
         echo "$(aqua root-dir)/bin" >> $GITHUB_PATH
         tfcmt --version

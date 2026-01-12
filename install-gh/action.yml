@@ -29,6 +29,7 @@ runs:
       run: |
         aqua init
         aqua g -i cli/cli
+        aqua i
         export PATH="$(aqua root-dir)/bin:$PATH"
         echo "$(aqua root-dir)/bin" >> $GITHUB_PATH
         gh --version
