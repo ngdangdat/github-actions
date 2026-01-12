@@ -29,7 +29,6 @@ jobs:
     secrets:
       gh_app_id: ${{ secrets.GH_APP_ID }}
       gh_app_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-      github_app_installation_id: ${{ secrets.GH_APP_INSTALLATION_ID }}
 
   apply:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -42,7 +41,6 @@ jobs:
     secrets:
       gh_app_id: ${{ secrets.GH_APP_ID }}
       gh_app_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-      github_app_installation_id: ${{ secrets.GH_APP_INSTALLATION_ID }}
 ```
 
 ## Inputs
@@ -63,7 +61,6 @@ jobs:
 |------|-------------|----------|
 | `gh_app_id` | GitHub App ID for Terraform GitHub provider | Yes |
 | `gh_app_private_key` | GitHub App Private Key (PEM format) | Yes |
-| `github_app_installation_id` | GitHub App Installation ID | Yes |
 
 ## Permissions
 
@@ -86,10 +83,7 @@ The GitHub App needs these permissions for the Terraform GitHub provider:
 - Repository permissions as needed (admin, contents, etc.)
 - Organization permissions as needed (members, teams, etc.)
 
-The app credentials are passed as environment variables:
-- `GITHUB_APP_ID`
-- `GITHUB_APP_INSTALLATION_ID`
-- `GITHUB_APP_PEM_FILE`
+The workflow uses `actions/create-github-app-token` to generate an installation access token from your GitHub App credentials. This token is then passed to Terraform via the `GITHUB_TOKEN` environment variable.
 
 ## Features
 

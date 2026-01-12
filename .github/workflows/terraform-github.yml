@@ -43,9 +43,6 @@ on:
       gh_app_private_key:
         description: GitHub App Private Key (PEM format) for Terraform GitHub provider
         required: true
-      github_app_installation_id:
-        description: GitHub App Installation ID for Terraform GitHub provider
-        required: true
 
 permissions:
   contents: read
@@ -100,13 +97,19 @@ jobs:
         with:
           terraform_version: ${{ inputs.terraform_version }}
 
+      - name: Generate GitHub App Token
+        id: github-app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.gh_app_id }}
+          private-key: ${{ secrets.gh_app_private_key }}
+          owner: ${{ github.repository_owner }}
+
       - name: Terraform Init
         shell: bash
         working-directory: ${{ inputs.working_directory }}
         env:
-          GITHUB_APP_ID: ${{ secrets.gh_app_id }}
-          GITHUB_APP_INSTALLATION_ID: ${{ secrets.github_app_installation_id }}
-          GITHUB_APP_PEM_FILE: ${{ secrets.gh_app_private_key }}
+          GITHUB_TOKEN: ${{ steps.github-app-token.outputs.token }}
         run: terraform init
 
       - name: Terraform Plan
@@ -115,9 +118,7 @@ jobs:
         working-directory: ${{ inputs.working_directory }}
         env:
           TFCMT_GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_APP_ID: ${{ secrets.gh_app_id }}
-          GITHUB_APP_INSTALLATION_ID: ${{ secrets.github_app_installation_id }}
-          GITHUB_APP_PEM_FILE: ${{ secrets.gh_app_private_key }}
+          GITHUB_TOKEN: ${{ steps.github-app-token.outputs.token }}
         run: tfcmt plan -- terraform plan ${{ inputs.plan_args }}
 
       - name: Terraform Apply
@@ -126,7 +127,5 @@ jobs:
         working-directory: ${{ inputs.working_directory }}
         env:
           TFCMT_GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_APP_ID: ${{ secrets.gh_app_id }}
-          GITHUB_APP_INSTALLATION_ID: ${{ secrets.github_app_installation_id }}
-          GITHUB_APP_PEM_FILE: ${{ secrets.gh_app_private_key }}
+          GITHUB_TOKEN: ${{ steps.github-app-token.outputs.token }}
         run: tfcmt apply -- terraform apply ${{ inputs.apply_args }}
