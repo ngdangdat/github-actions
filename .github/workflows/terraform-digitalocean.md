@@ -1,6 +1,6 @@
 # Terraform DigitalOcean Reusable Workflow
 
-Reusable workflow for Terraform plan/apply with DigitalOcean provider authentication and tfcmt PR comments.
+Reusable workflow for Terraform plan/apply with DigitalOcean provider authentication, GCS backend via Workload Identity, and tfcmt PR comments.
 
 ## Usage
 
@@ -22,6 +22,8 @@ jobs:
     if: github.event_name == 'pull_request'
     uses: ngdangdat/github-actions/.github/workflows/terraform-digitalocean.yml@main
     with:
+      gcp_workload_identity_provider: projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/github
+      gcp_service_account: terraform@my-project.iam.gserviceaccount.com
       working_directory: terraform/digitalocean
       mode: plan
     secrets:
@@ -33,6 +35,8 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     uses: ngdangdat/github-actions/.github/workflows/terraform-digitalocean.yml@main
     with:
+      gcp_workload_identity_provider: projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/github
+      gcp_service_account: terraform@my-project.iam.gserviceaccount.com
       working_directory: terraform/digitalocean
       mode: apply
     secrets:
@@ -45,6 +49,8 @@ jobs:
 
 | Name | Description | Required | Default |
 |------|-------------|----------|---------|
+| `gcp_workload_identity_provider` | GCP Workload Identity Provider for GCS backend | Yes | - |
+| `gcp_service_account` | GCP Service Account email for Workload Identity | Yes | - |
 | `working_directory` | Directory containing Terraform configuration | No | `.` |
 | `terraform_version` | Terraform version to use | No | `latest` |
 | `mode` | Terraform mode: `plan` or `apply` | No | `plan` |
@@ -56,38 +62,32 @@ jobs:
 | Name | Description | Required |
 |------|-------------|----------|
 | `digitalocean_token` | DigitalOcean API Token for Terraform provider | Yes |
-| `spaces_access_key` | DigitalOcean Spaces access key for S3 backend | No |
-| `spaces_secret_key` | DigitalOcean Spaces secret key for S3 backend | No |
+| `spaces_access_key` | DigitalOcean Spaces access key (for future use) | No |
+| `spaces_secret_key` | DigitalOcean Spaces secret key (for future use) | No |
 
 ## Permissions
 
 This workflow defines its own permissions:
 
 - `contents: read` - Read repository contents
+- `id-token: write` - Required for GCP Workload Identity authentication
 - `pull-requests: write` - Required for tfcmt PR comments
 
 ## Prerequisites
 
-1. **DigitalOcean API Token** with appropriate permissions for your resources
-2. **DigitalOcean Spaces** (optional) for Terraform state backend with access keys
+1. **GCP Workload Identity** configured for GitHub Actions (for GCS backend)
+2. **GCS Bucket** for Terraform state with appropriate IAM permissions
+3. **DigitalOcean API Token** with appropriate permissions for your resources
 
 ## Terraform Backend Configuration
 
-To use DigitalOcean Spaces as your Terraform backend:
+To use GCS as your Terraform backend:
 
 ```hcl
 terraform {
-  backend "s3" {
-    endpoints = {
-      s3 = "https://nyc3.digitaloceanspaces.com"
-    }
-    bucket                      = "my-terraform-state"
-    key                         = "terraform.tfstate"
-    region                      = "us-east-1"  # Required but ignored by DO Spaces
-    skip_credentials_validation = true
-    skip_requesting_account_id  = true
-    skip_metadata_api_check     = true
-    skip_s3_checksum            = true
+  backend "gcs" {
+    bucket = "my-terraform-state"
+    prefix = "digitalocean"
   }
 }
 ```
@@ -95,7 +95,7 @@ terraform {
 ## Features
 
 - DigitalOcean API token authentication
-- Optional Spaces backend support (S3-compatible)
+- GCS backend support via GCP Workload Identity
 - tfcmt for rich PR comments with plan output
 - aqua for tool management with caching
 - Supports custom Terraform version

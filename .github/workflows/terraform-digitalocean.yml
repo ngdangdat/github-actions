@@ -3,6 +3,14 @@ name: Terraform DigitalOcean
 on:
   workflow_call:
     inputs:
+      gcp_workload_identity_provider:
+        description: GCP Workload Identity Provider for GCS backend (e.g., projects/123/locations/global/workloadIdentityPools/pool/providers/provider)
+        required: true
+        type: string
+      gcp_service_account:
+        description: GCP Service Account email for Workload Identity (GCS backend access)
+        required: true
+        type: string
       working_directory:
         description: Directory containing Terraform configuration
         required: false
@@ -41,6 +49,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
   pull-requests: write
 
 jobs:
@@ -49,6 +58,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ inputs.gcp_workload_identity_provider }}
+          service_account: ${{ inputs.gcp_service_account }}
 
       - name: Setup aqua cache
         uses: actions/cache@v4
