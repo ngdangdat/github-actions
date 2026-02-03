@@ -11,6 +11,7 @@ A collection of reusable GitHub Actions (composite actions) for infrastructure a
 - **install-gh/**: Install GitHub CLI across Linux, macOS, Windows runners using aqua
 - **terraform-github/**: Terraform plan/apply with GitHub App auth, GCS backend via Workload Identity, tfcmt PR comments
 - **terraform-gcp/**: Terraform plan/apply with GCP Workload Identity auth, GCS backend, tfcmt PR comments
+- **terraform-digitalocean/**: Terraform plan/apply with DigitalOcean API token auth, optional Spaces backend, tfcmt PR comments
 
 ## Claude Commands
 

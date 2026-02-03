@@ -1,0 +1,117 @@
+name: Terraform DigitalOcean
+
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        description: Directory containing Terraform configuration
+        required: false
+        type: string
+        default: "."
+      terraform_version:
+        description: Terraform version to use
+        required: false
+        type: string
+        default: "latest"
+      mode:
+        description: "Terraform mode: 'plan' or 'apply'"
+        required: false
+        type: string
+        default: "plan"
+      plan_args:
+        description: Additional arguments for terraform plan
+        required: false
+        type: string
+        default: ""
+      apply_args:
+        description: Additional arguments for terraform apply
+        required: false
+        type: string
+        default: "-auto-approve"
+    secrets:
+      digitalocean_token:
+        description: DigitalOcean API Token for Terraform provider authentication
+        required: true
+      spaces_access_key:
+        description: DigitalOcean Spaces access key for S3 backend (optional)
+        required: false
+      spaces_secret_key:
+        description: DigitalOcean Spaces secret key for S3 backend (optional)
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup aqua cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/aquaproj-aqua
+            ~/.cache/aquaproj-aqua
+          key: ${{ runner.os }}-aqua-${{ hashFiles('aqua.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-aqua-
+
+      - name: Install aqua
+        uses: aquaproj/aqua-installer@v4.0.4
+        with:
+          aqua_version: v2.56.2
+
+      - name: Install tfcmt
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AQUA_GHATTESTATION_DISABLED: "true"
+        run: |
+          if [ ! -f aqua.yaml ]; then
+            aqua init
+            aqua g -i suzuki-shunsuke/tfcmt
+          fi
+          aqua i
+          export PATH="$(aqua root-dir)/bin:$PATH"
+          echo "$(aqua root-dir)/bin" >> $GITHUB_PATH
+          tfcmt --version
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform_version }}
+
+      - name: Terraform Init
+        shell: bash
+        working-directory: ${{ inputs.working_directory }}
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.digitalocean_token }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.spaces_access_key }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.spaces_secret_key }}
+        run: terraform init
+
+      - name: Terraform Plan
+        if: inputs.mode == 'plan'
+        shell: bash
+        working-directory: ${{ inputs.working_directory }}
+        env:
+          TFCMT_GITHUB_TOKEN: ${{ github.token }}
+          DIGITALOCEAN_TOKEN: ${{ secrets.digitalocean_token }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.spaces_access_key }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.spaces_secret_key }}
+        run: tfcmt plan -patch -- terraform plan ${{ inputs.plan_args }}
+
+      - name: Terraform Apply
+        if: inputs.mode == 'apply'
+        shell: bash
+        working-directory: ${{ inputs.working_directory }}
+        env:
+          TFCMT_GITHUB_TOKEN: ${{ github.token }}
+          DIGITALOCEAN_TOKEN: ${{ secrets.digitalocean_token }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.spaces_access_key }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.spaces_secret_key }}
+        run: tfcmt apply -- terraform apply ${{ inputs.apply_args }}
